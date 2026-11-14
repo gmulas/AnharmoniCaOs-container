@@ -30,11 +30,15 @@ ARG JOBS=4
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       build-essential gfortran pkg-config python3 curl ca-certificates xz-utils file \
       libopenmpi-dev openmpi-bin \
-      libblas64-dev liblapack64-dev libscalapack64-openmpi-dev \
+      libopenblas64-openmp-dev liblapack64-dev libscalapack64-openmpi-dev \
       libgsl-dev libpari-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+# 64-bit-integer BLAS/LAPACK: OpenBLAS64 with OpenMP, as in the build the
+# release was validated with (Debian's libblas64.so.3 and liblapack64.so.3
+# are alternatives that point to it, and it has the highest priority over
+# the reference BLAS64); ScaLAPACK64 links against them.
 ENV BLAS64="-llapack64 -lblas64" SCALAPACK64="-lscalapack64-openmpi"
 WORKDIR /src
 
@@ -106,7 +110,7 @@ LABEL org.opencontainers.image.title="AnharmoniCaOs" \
 # tracking those names, at the cost of some size.
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       openmpi-bin libopenmpi-dev libgfortran5 libgomp1 \
-      libblas64-dev liblapack64-dev libscalapack64-openmpi-dev \
+      libopenblas64-openmp-dev liblapack64-dev libscalapack64-openmpi-dev \
       libgsl-dev libpari-dev \
       python3 python3-numpy python3-matplotlib xz-utils \
     && rm -rf /var/lib/apt/lists/*
