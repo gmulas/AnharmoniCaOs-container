@@ -52,6 +52,19 @@ container:
 ```
 apptainer exec anharmonicaos-2026.11.1.sif mpirun -np 8 thermal_anharmonicity_fase2b
 ```
+**Several nodes (try at your own risk).** Apptainer also supports the
+"hybrid" model, in which the host's `mpirun` (or `srun`) starts one
+container per process:
+```
+mpirun -np 64 apptainer exec anharmonicaos-2026.11.1.sif thermal_anharmonicity_fase2b
+```
+This usually works on x86_64 Linux when the host's OpenMPI is close in
+version to the one in the image (see `apptainer exec ... ompi_info
+--version`; the image has the OpenMPI of Debian stable), but it depends on
+the cluster's MPI, network and launcher, and it is not tested here. Check
+the result against a single-node run (for example with `anh-selftest`'s
+Tutorial 1) before relying on it.
+
 For many starting states, the job scripts of `anh_jobs.py` take the program
 names from `FASE2A`/`FASE2B`, for example
 `FASE2A="apptainer exec $PWD/anharmonicaos-2026.11.1.sif thermal_anharmonicity_fase2a"`.
@@ -67,8 +80,9 @@ names from `FASE2A`/`FASE2B`, for example
 
 There are no CPU-specific optimisations, so the image runs on any x86_64
 or arm64 machine; a build tuned for one machine (see the manual) can be
-faster. Only one node: MPI across several nodes from a container needs an
-MPI compatible with the host's, and is not covered here.
+faster. Within one node MPI runs inside the container; across several
+nodes see the hybrid model above, which needs an MPI on the host close to
+the one in the image.
 
 ## Building it yourself
 
