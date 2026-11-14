@@ -6,8 +6,8 @@
 # Everything is built from public sources: Debian packages (MPI, 64-bit
 # BLAS/LAPACK/ScaLAPACK, GSL, PARI, Python), PETSc, SLEPc and ELPA from
 # their release tarballs, AnharmoniCaOs from the release tarball on
-# SourceForge (checked against its SHA256). Integers are 64-bit throughout
-# (PETSc indices and BLAS integers, ScaLAPACK, ELPA), as in the builds the
+# SourceForge (checked against its SHA256). BLAS, LAPACK, ScaLAPACK and ELPA
+# use 64-bit integers, PETSc's PetscInt is 32-bit, as in the build the
 # release was validated with. No CPU-specific optimisation: the image runs
 # on any x86_64 or arm64 machine.
 #
@@ -22,7 +22,7 @@ ARG ANH_SHA256=8f923633b758553ea1c497694eacec3adf66216ad9d9b5fc5b450c2484f7a6f6
 # "python3 -m http.server" and build with --network=host
 # --build-arg ANH_URL=http://localhost:8000/AnharmoniCaOs-<version>.tar.gz
 ARG ANH_URL=https://downloads.sourceforge.net/project/anharmonica/AnharmoniCaOs-${ANH_VERSION}.tar.gz
-ARG PETSC_VERSION=3.24.1
+ARG PETSC_VERSION=3.25.5
 ARG SLEPC_VERSION=3.24.1
 ARG ELPA_VERSION=2026.02.002
 ARG JOBS=4
@@ -31,7 +31,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
       build-essential gfortran pkg-config python3 curl ca-certificates xz-utils file \
       libopenmpi-dev openmpi-bin \
       libopenblas64-openmp-dev liblapack64-dev libscalapack64-openmpi-dev \
-      libgsl-dev libpari-dev \
+      libgsl-dev libpari-dev libyaml-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
@@ -42,18 +42,24 @@ ENV OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 ENV BLAS64="-llapack64 -lblas64" SCALAPACK64="-lscalapack64-openmpi"
 WORKDIR /src
 
-# PETSc: 64-bit indices and 64-bit BLAS integers, no debugging, generic -O2.
+# PETSc: the configure options of the validated build (code work order T29:
+# PETSc 3.25.5, --with-debugging=0 --with-64-bit-blas-indices
+# --with-blas-lib=-lblas64 --with-lapack-lib=-llapack64 --with-yaml=1,
+# "-g -O3"). Its PetscInt is 32-bit: only the BLAS integers are 64-bit.
+# Left out: --with-opencl=1 (GPU), the CUDA/HIP flags (no effect without
+# them) and the install path. X11 is not installed, so it is off as with
+# --with-x=0.
 # Without ScaLAPACK: PETSc refuses it with 64-bit BLAS integers ("Cannot use
 # ScaLAPACK with 64-bit BLAS/LAPACK indices") and does not need it;
 # AnharmoniCaOs and ELPA link Debian's scalapack64-openmpi themselves.
 RUN curl -fsSL https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-${PETSC_VERSION}.tar.gz | tar xz \
  && cd petsc-${PETSC_VERSION} \
  && ./configure --prefix=/opt/petsc --with-debugging=0 \
-      --with-64-bit-indices --with-64-bit-blas-indices \
-      --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpifort \
-      COPTFLAGS=-O2 CXXOPTFLAGS=-O2 FOPTFLAGS=-O2 \
-      --with-blaslapack-lib="${BLAS64}" \
-      --with-x=0 --with-shared-libraries=1 \
+      --with-64-bit-blas-indices \
+      --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90 \
+      COPTFLAGS="-g -O3" CXXOPTFLAGS="-g -O3" FOPTFLAGS="-g -O3" \
+      --with-blas-lib=-lblas64 --with-lapack-lib=-llapack64 \
+      --with-yaml=1 --with-x=0 \
  && make PETSC_DIR=$PWD PETSC_ARCH=arch-linux-c-opt -j${JOBS} all \
  && make PETSC_DIR=$PWD PETSC_ARCH=arch-linux-c-opt install \
  && cd .. && rm -rf petsc-${PETSC_VERSION}
@@ -111,7 +117,7 @@ LABEL org.opencontainers.image.title="AnharmoniCaOs" \
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       openmpi-bin libopenmpi-dev libgfortran5 libgomp1 \
       libopenblas64-openmp-dev liblapack64-dev libscalapack64-openmpi-dev \
-      libgsl-dev libpari-dev \
+      libgsl-dev libpari-dev libyaml-dev \
       python3 python3-numpy python3-matplotlib xz-utils \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /opt /opt
