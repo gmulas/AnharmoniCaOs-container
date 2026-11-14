@@ -17,6 +17,11 @@ ARG DEBIAN=trixie
 FROM debian:${DEBIAN}-slim AS build
 ARG ANH_VERSION=2026.11.1
 ARG ANH_SHA256=8f923633b758553ea1c497694eacec3adf66216ad9d9b5fc5b450c2484f7a6f6
+# Where to get the release tarball; its SHA256 is checked whatever the
+# source. For a local test before the upload, serve the tarball with
+# "python3 -m http.server" and build with --network=host
+# --build-arg ANH_URL=http://localhost:8000/AnharmoniCaOs-<version>.tar.gz
+ARG ANH_URL=https://downloads.sourceforge.net/project/anharmonica/${ANH_VERSION}/AnharmoniCaOs-${ANH_VERSION}.tar.gz
 ARG PETSC_VERSION=3.24.1
 ARG SLEPC_VERSION=3.24.1
 ARG ELPA_VERSION=2026.02.002
@@ -72,7 +77,7 @@ RUN curl -fsSL https://elpa.mpcdf.mpg.de/software/tarball-archive/Releases/${ELP
  && cd .. && rm -rf elpa-${ELPA_VERSION}
 
 # AnharmoniCaOs from the release tarball, with its bundled input parser
-RUN curl -fsSL -o anh.tar.gz https://downloads.sourceforge.net/project/anharmonica/${ANH_VERSION}/AnharmoniCaOs-${ANH_VERSION}.tar.gz \
+RUN curl -fsSL -o anh.tar.gz "${ANH_URL}" \
  && echo "${ANH_SHA256}  anh.tar.gz" | sha256sum -c - \
  && tar xzf anh.tar.gz && rm anh.tar.gz \
  && cd AnharmoniCaOs-${ANH_VERSION} \
