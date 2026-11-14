@@ -1,0 +1,40 @@
+#!/bin/sh
+# Self-test of the AnharmoniCaOs image: runs Tutorial 1 of the manual
+# (pyrene, absorption from the ground state) in a temporary directory and
+# compares the results with those of the release.
+#   anh-selftest [NPROC]     (default 2 MPI processes for phase 2b)
+# Expected (AnharmoniCaOs 2026.11.1, code work order T29): 1788 lines in
+# resonanceslist, largest polyad 2363 states, total absorption 446.076
+# km/mol. With other BLAS libraries the last digits of the intensities may
+# differ, so the total is compared within 0.01 km/mol.
+set -e
+NP=${1:-2}
+W=$(mktemp -d)
+cp -r "${ANH_EXAMPLES:?}/pyrene/." "$W/"
+cd "$W"
+sh ./run.sh "${ANHBIN:?}" "$NP" > selftest.log 2>&1 || {
+  cat selftest.log; echo "anh-selftest: FAILED (run.sh), see $W"; exit 1; }
+head -1 fase1.log
+lines=$(wc -l < resonanceslist)
+largest=$(awk '{print $1}' polyadsizes | sort -n | tail -1)
+# km/mol = 16.194 * wavenumber (cm-1) * |mu|^2 (a.u.), summed over x, y, z
+total=$(python3 -c '
+t = 0.0
+for c in (0, 1, 2):
+    for l in open("hist_abs_%d" % c):
+        p = l.split()
+        if l.startswith("#") or len(p) != 2:
+            continue
+        t += 16.194 * float(p[0]) * float(p[1])
+print("%.3f" % t)')
+echo "resonanceslist lines: $lines (expected 1788)"
+echo "largest polyad: $largest (expected 2363)"
+echo "total absorption: $total km/mol (expected 446.076)"
+ok=$(python3 -c "print(int($lines == 1788 and $largest == 2363 and abs($total - 446.076) < 0.01))")
+if [ "$ok" = 1 ]; then
+  echo "anh-selftest: OK"
+  rm -rf "$W"
+else
+  echo "anh-selftest: FAILED, see $W"
+  exit 1
+fi
