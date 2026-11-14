@@ -23,7 +23,7 @@ ARG ANH_SHA256=8f923633b758553ea1c497694eacec3adf66216ad9d9b5fc5b450c2484f7a6f6
 # --build-arg ANH_URL=http://localhost:8000/AnharmoniCaOs-<version>.tar.gz
 ARG ANH_URL=https://downloads.sourceforge.net/project/anharmonica/AnharmoniCaOs-${ANH_VERSION}.tar.gz
 ARG PETSC_VERSION=3.25.5
-ARG SLEPC_VERSION=3.24.1
+ARG SLEPC_VERSION=3.25.1
 ARG ELPA_VERSION=2026.02.002
 ARG JOBS=4
 
@@ -64,7 +64,7 @@ RUN curl -fsSL https://web.cels.anl.gov/projects/petsc/download/release-snapshot
  && make PETSC_DIR=$PWD PETSC_ARCH=arch-linux-c-opt install \
  && cd .. && rm -rf petsc-${PETSC_VERSION}
 
-# SLEPc on that PETSc
+# SLEPc 3.25.1 on that PETSc, without options, as in the validated build
 RUN curl -fsSL https://slepc.upv.es/download/distrib/slepc-${SLEPC_VERSION}.tar.gz | tar xz \
  && cd slepc-${SLEPC_VERSION} \
  && PETSC_DIR=/opt/petsc ./configure --prefix=/opt/slepc \
