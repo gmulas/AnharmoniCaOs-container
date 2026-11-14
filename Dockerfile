@@ -33,7 +33,10 @@ ENV OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 ENV BLAS64="-llapack64 -lblas64" SCALAPACK64="-lscalapack64-openmpi"
 WORKDIR /src
 
-# PETSc: 64-bit indices and 64-bit BLAS integers, no debugging, generic -O2
+# PETSc: 64-bit indices and 64-bit BLAS integers, no debugging, generic -O2.
+# Without ScaLAPACK: PETSc refuses it with 64-bit BLAS integers ("Cannot use
+# ScaLAPACK with 64-bit BLAS/LAPACK indices") and does not need it;
+# AnharmoniCaOs and ELPA link Debian's scalapack64-openmpi themselves.
 RUN curl -fsSL https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-${PETSC_VERSION}.tar.gz | tar xz \
  && cd petsc-${PETSC_VERSION} \
  && ./configure --prefix=/opt/petsc --with-debugging=0 \
@@ -41,7 +44,6 @@ RUN curl -fsSL https://web.cels.anl.gov/projects/petsc/download/release-snapshot
       --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpifort \
       COPTFLAGS=-O2 CXXOPTFLAGS=-O2 FOPTFLAGS=-O2 \
       --with-blaslapack-lib="${BLAS64}" \
-      --with-scalapack-lib="${SCALAPACK64}" \
       --with-x=0 --with-shared-libraries=1 \
  && make PETSC_DIR=$PWD PETSC_ARCH=arch-linux-c-opt -j${JOBS} all \
  && make PETSC_DIR=$PWD PETSC_ARCH=arch-linux-c-opt install \
