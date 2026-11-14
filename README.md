@@ -22,7 +22,11 @@ docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.1 anh-selftest
 ```
 `anh-selftest [N]` runs Tutorial 1 of the manual with N MPI processes for
 phase 2b (default 2) and should end with `anh-selftest: OK`; it takes about
-one minute. The image is about 1.5 GB.
+one minute. N must not exceed the number of physical cores: the image's
+OpenMPI gives one slot per core, so on a machine with hyper-threading
+`anh-selftest $(nproc)` fails with "not enough slots" (use
+`mpirun --use-hwthread-cpus` or `--oversubscribe` for your own runs if you
+really want more processes). The image is about 1.5 GB.
 
 To work on your own files, mount the current directory as `/work`:
 ```
