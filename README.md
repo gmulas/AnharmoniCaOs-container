@@ -83,10 +83,20 @@ network and launcher. What was tried, on Tutorial 1:
   `mpirun` inside the allocation, 4 processes on one node gave histograms
   identical to a run inside the container, and 8 processes on two nodes
   ran as one job, with differences only in the last digits (as with any
-  change of the process count). The processes chose OpenMPI's `ob1`
-  transport, not UCX, so the fast network of the cluster was probably not
-  used: fine for phase 2b, which communicates little, but check with
-  `--mca pml_base_verbose 10` before relying on the speed of a larger run.
+  change of the process count).
+
+**InfiniBand.** Debian's OpenMPI, which the image has, disables UCX by
+default (`pml = ^ucx` in `/etc/openmpi/openmpi-mca-params.conf`), so the
+processes fall back to OpenMPI's `ob1` transport, which does not use
+InfiniBand. To use it, set the PML to UCX for the processes in the
+container:
+```
+mpirun -np 64 -x OMPI_MCA_pml=ucx apptainer exec anharmonicaos-2026.11.1.sif thermal_anharmonicity_fase2b
+```
+On the cluster above this made UCX use the InfiniBand adapter (`rc_verbs`
+on `mlx5_0`, shown with `--mca pml_ucx_verbose 10`), phase 2b of Tutorial
+1 on two nodes took 34 s instead of 55 s, and the histograms were the same
+up to the last digits.
 
 Inside a Slurm allocation, `mpirun` *inside* the container sees the job's
 task count: for a single-task job with several cores, use
