@@ -72,16 +72,28 @@ RUN curl -fsSL https://slepc.upv.es/download/distrib/slepc-${SLEPC_VERSION}.tar.
  && make SLEPC_DIR=$PWD PETSC_DIR=/opt/petsc install \
  && cd .. && rm -rf slepc-${SLEPC_VERSION}
 
-# ELPA with 64-bit integers, OpenMP, generic kernels only (AnharmoniCaOs
-# uses the one-stage solver by default; generic kernels avoid illegal
-# instructions on older CPUs and build the same way on arm64)
+# ELPA: the configure options of the validated build (code work order T29,
+# ~/myelpa64: ELPA 2026.02.002 without OpenMP, --enable-64bit-integer-math-
+# support, FCFLAGS "-g -O2", ScaLAPACK64/LAPACK64/BLAS64 of Debian).
+# Left out: the CPU flags of its CFLAGS (-mavx2 -mfma ...), its NVIDIA GPU
+# options (--enable-nvidia-gpu-kernels, --enable-gpu-streams, CUDA path and
+# compute capability) and the install path. Only the generic kernels are
+# built, so that the image runs on any x86_64 or arm64 CPU: the SSE, AVX,
+# AVX2 and AVX512 kernels of the reference are disabled (AnharmoniCaOs uses
+# the one-stage solver by default, which does not use them).
+# The libraries go in LIBS as well: configure puts SCALAPACK_LDFLAGS before
+# the test program, and the linker of Debian drops libraries that come
+# before the objects needing them (--as-needed), so its dgemm test fails
+# ("could not link with blas") unless they are also after the object.
 RUN curl -fsSL https://elpa.mpcdf.mpg.de/software/tarball-archive/Releases/${ELPA_VERSION}/elpa-${ELPA_VERSION}.tar.gz | tar xz \
  && cd elpa-${ELPA_VERSION} \
- && ./configure FC=mpifort CC=mpicc FCFLAGS="-O2" CFLAGS="-O2" \
+ && ./configure FC=mpifort CC=mpicc FCFLAGS="-g -O2" CFLAGS="-g -O2" \
       SCALAPACK_LDFLAGS="${SCALAPACK64} ${BLAS64}" SCALAPACK_FCFLAGS="" \
-      --prefix=/opt/elpa --enable-openmp --enable-64bit-integer-math-support \
-      --disable-sse --disable-sse-assembly --disable-avx --disable-avx2 --disable-avx512 \
-      --disable-neon-arch64 --disable-sve128 --disable-sve256 --disable-sve512 \
+      LIBS="${SCALAPACK64} ${BLAS64}" \
+      --prefix=/opt/elpa --enable-option-checking=fatal \
+      --enable-64bit-integer-math-support \
+      --disable-sse-kernels --disable-sse-assembly-kernels --disable-avx-kernels \
+      --disable-avx2-kernels --disable-avx512-kernels \
       --enable-c-tests=no --enable-cpp-tests=no --with-test-programs=no \
  && make -j${JOBS} && make install \
  && cd .. && rm -rf elpa-${ELPA_VERSION}
