@@ -74,12 +74,25 @@ mpirun -np 64 apptainer exec anharmonicaos-2026.11.1.sif thermal_anharmonicity_f
 It needs an MPI on the host that can start the image's OpenMPI (see
 `apptainer exec ... ompi_info --version`; the image has the OpenMPI of
 Debian stable, 5.0.7 in trixie), and it depends on the cluster's MPI,
-network and launcher. Tested on one machine only: on a laptop, the host's
-OpenMPI 6.0.0rc2 started 4 processes of the image's 5.0.7 as one MPI job
-(`mpirun -np 4 apptainer exec ... thermal_anharmonicity_fase2b` on Tutorial
-1), and the histograms were identical to those of `mpirun` inside the
-container. Across nodes it is not tested. Check the result against a
-single-node run (for example Tutorial 1) before relying on it.
+network and launcher. What was tried, on Tutorial 1:
+- a laptop: the host's OpenMPI 6.0.0rc2 started 4 processes of the image's
+  5.0.7 as one MPI job, and the histograms were identical to those of
+  `mpirun` inside the container;
+- a Slurm cluster with OpenMPI 5.0.7 and SingularityCE 3.11 (use
+  `singularity exec` where there is no `apptainer`): with the host's
+  `mpirun` inside the allocation, 4 processes on one node gave histograms
+  identical to a run inside the container, and 8 processes on two nodes
+  ran as one job, with differences only in the last digits (as with any
+  change of the process count). The processes chose OpenMPI's `ob1`
+  transport, not UCX, so the fast network of the cluster was probably not
+  used: fine for phase 2b, which communicates little, but check with
+  `--mca pml_base_verbose 10` before relying on the speed of a larger run.
+
+Inside a Slurm allocation, `mpirun` *inside* the container sees the job's
+task count: for a single-task job with several cores, use
+`apptainer exec --cleanenv ... mpirun -np N ...`, which hides the Slurm
+variables. Check the result against a single-node run (for example
+Tutorial 1) before relying on it.
 
 For many starting states, the job scripts of `anh_jobs.py` take the program
 names from `FASE2A`/`FASE2B`, for example
