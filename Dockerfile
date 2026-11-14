@@ -21,7 +21,7 @@ ARG ANH_SHA256=8f923633b758553ea1c497694eacec3adf66216ad9d9b5fc5b450c2484f7a6f6
 # source. For a local test before the upload, serve the tarball with
 # "python3 -m http.server" and build with --network=host
 # --build-arg ANH_URL=http://localhost:8000/AnharmoniCaOs-<version>.tar.gz
-ARG ANH_URL=https://downloads.sourceforge.net/project/anharmonica/${ANH_VERSION}/AnharmoniCaOs-${ANH_VERSION}.tar.gz
+ARG ANH_URL=https://downloads.sourceforge.net/project/anharmonica/AnharmoniCaOs-${ANH_VERSION}.tar.gz
 ARG PETSC_VERSION=3.24.1
 ARG SLEPC_VERSION=3.24.1
 ARG ELPA_VERSION=2026.02.002
