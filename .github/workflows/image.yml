@@ -1,0 +1,66 @@
+# Build the AnharmoniCaOs image natively on amd64 and arm64, run the
+# self-test (Tutorial 1 of the manual) in each, and, on main or on a tag,
+# publish one multi-architecture image to the GitHub Container Registry:
+#   ghcr.io/gmulas/anharmonicaos:<version>  and  :latest
+# Pull requests only build and test.
+name: image
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/gmulas/anharmonicaos
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: v
+        name: Version from the Dockerfile
+        run: echo "version=$(sed -n 's/^ARG ANH_VERSION=//p' Dockerfile | head -1)" >> "$GITHUB_OUTPUT"
+      - name: Build
+        run: docker build --build-arg JOBS=$(nproc) -t anh:test .
+      - name: Self-test (Tutorial 1)
+        run: docker run --rm anh:test anh-selftest $(nproc)
+      - name: Log in to ghcr.io
+        if: github.event_name != 'pull_request'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Push the ${{ matrix.arch }} image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag anh:test "$IMAGE:${{ steps.v.outputs.version }}-${{ matrix.arch }}"
+          docker push "$IMAGE:${{ steps.v.outputs.version }}-${{ matrix.arch }}"
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: One multi-architecture tag
+        run: |
+          V=${{ needs.build.outputs.version }}
+          docker buildx imagetools create -t "$IMAGE:$V" -t "$IMAGE:latest" \
+            "$IMAGE:$V-amd64" "$IMAGE:$V-arm64"
+          docker buildx imagetools inspect "$IMAGE:$V"
