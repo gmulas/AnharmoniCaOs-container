@@ -85,6 +85,9 @@ RUN curl -fsSL https://slepc.upv.es/download/distrib/slepc-${SLEPC_VERSION}.tar.
 # the test program, and the linker of Debian drops libraries that come
 # before the objects needing them (--as-needed), so its dgemm test fails
 # ("could not link with blas") unless they are also after the object.
+# A parallel make can fail on a race between Fortran modules (libelpatest
+# needs elpa.mod and cuda_functions.mod before they exist); a second,
+# serial make finishes the build, and still fails on a real error.
 RUN curl -fsSL https://elpa.mpcdf.mpg.de/software/tarball-archive/Releases/${ELPA_VERSION}/elpa-${ELPA_VERSION}.tar.gz | tar xz \
  && cd elpa-${ELPA_VERSION} \
  && ./configure FC=mpifort CC=mpicc FCFLAGS="-g -O2" CFLAGS="-g -O2" \
@@ -95,7 +98,7 @@ RUN curl -fsSL https://elpa.mpcdf.mpg.de/software/tarball-archive/Releases/${ELP
       --disable-sse-kernels --disable-sse-assembly-kernels --disable-avx-kernels \
       --disable-avx2-kernels --disable-avx512-kernels \
       --enable-c-tests=no --enable-cpp-tests=no --with-test-programs=no \
- && make -j${JOBS} && make install \
+ && { make -j${JOBS} || make; } && make install \
  && cd .. && rm -rf elpa-${ELPA_VERSION}
 
 # AnharmoniCaOs from the release tarball, with its bundled input parser
