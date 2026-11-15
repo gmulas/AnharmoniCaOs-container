@@ -15,7 +15,8 @@ The image is `ghcr.io/gmulas/anharmonicaos`, for x86_64 (amd64) and arm64
 
 ## Laptop or workstation: Docker
 
-With Docker (Linux, or Docker Desktop on macOS and Windows):
+With Docker (Linux, or Docker Desktop on macOS and Windows; see
+[macOS and Windows](#macos-and-windows-not-tested-yet) below):
 ```
 docker pull ghcr.io/gmulas/anharmonicaos:2026.11.1
 docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.1 anh-selftest
@@ -49,6 +50,36 @@ Who owns the files you write in `/work`:
   "Permission denied".
 - **Docker with a root daemon** (the usual Linux installation): add
   `--user $(id -u):$(id -g)` to `docker run`, or the files belong to root.
+
+## macOS and Windows: not tested yet
+
+The image is tested on Linux only (x86_64 and arm64). It should also run on:
+- **macOS**, with Docker Desktop or an equivalent (Colima, OrbStack,
+  Podman), which runs a Linux virtual machine: Docker picks the arm64 image
+  on Apple silicon and the amd64 one on Intel Macs. The `.sif` files are of
+  no use on a Mac: Apptainer and Singularity do not run on macOS itself.
+- **Windows**, inside WSL2: with Docker Desktop (WSL2 back end) or Docker
+  installed in the WSL2 Linux distribution, or with Apptainer there. Windows
+  without WSL2 is not supported.
+
+If you try it, please report the result. It takes a few minutes:
+1. Install Docker Desktop (macOS, or Windows with WSL2), start it, and open
+   a terminal (on Windows, the terminal of the WSL2 distribution, e.g.
+   Ubuntu).
+2. Run
+   ```
+   docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.1 anh-selftest
+   ```
+   The first time it downloads about 1.5 GB. It should end, after about a
+   minute, with `anh-selftest: OK`.
+3. Send the last lines of the output, the version of the system (macOS
+   version and chip, or Windows version and WSL2 distribution), and the
+   output of `docker version`, to the maintainer, or open an issue in this
+   repository.
+
+Docker Desktop gives its virtual machine only part of the computer's
+memory and cores (Settings → Resources); the self-test needs less than
+1 GB, larger calculations may need more.
 
 ## Cluster: Apptainer (Singularity)
 
