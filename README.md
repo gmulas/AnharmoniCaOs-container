@@ -143,14 +143,23 @@ on `mlx5_0`, shown with `--mca pml_ucx_verbose 10`), phase 2b of Tutorial
 up to the last digits.
 
 Inside a Slurm allocation, `mpirun` *inside* the container sees the job's
-task count: for a single-task job with several cores, use
-`apptainer exec --cleanenv ... mpirun -np N ...`, which hides the Slurm
-variables. Check the result against a single-node run (for example
+task count: in a single-task job with several cores, `mpirun -np 4` stops
+with "not enough slots"; use `apptainer exec --cleanenv ... mpirun -np N ...`,
+which hides the Slurm variables (`--env OMP_NUM_THREADS=N` still passes the
+threads). Check the result against a single-node run (for example
 Tutorial 1) before relying on it.
 
-For many starting states, the job scripts of `anh_jobs.py` take the program
-names from `FASE2A`/`FASE2B`, for example
-`FASE2A="apptainer exec $PWD/anharmonicaos-2026.11.1.sif thermal_anharmonicity_fase2a"`.
+For many starting states, put the container in the `mpirun` entry of the
+Slurm profile of `anh_jobs.py`, and leave `bindir` empty, so that each job
+starts the programs inside the image:
+```
+"mpirun": "apptainer exec --cleanenv --env OMP_NUM_THREADS=8 /path/anharmonicaos-2026.11.1.sif mpirun -np 1 --bind-to none",
+"bindir": ""
+```
+(tested on a Slurm cluster with SingularityCE: the histograms are the same
+as those of a direct run). Setting `FASE2A`/`FASE2B` to a command of
+several words does not work: the job scripts pass them as a single word.
+See the chapter "Running the programs" of the manual.
 
 ## What is inside
 
