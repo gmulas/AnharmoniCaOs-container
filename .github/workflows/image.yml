@@ -7,9 +7,13 @@ name: image
 
 on:
   pull_request:
+    paths-ignore: ['**.md', 'LICENSE']
   push:
     branches: [main]
     tags: ['v*']
+    # a change to the documentation only must not rebuild and republish
+    # the image of the same version (tags are never filtered by paths)
+    paths-ignore: ['**.md', 'LICENSE']
   workflow_dispatch:
 
 env:
