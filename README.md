@@ -16,7 +16,7 @@ The image is `ghcr.io/gmulas/anharmonicaos`, for x86_64 (amd64) and arm64
 ## Laptop or workstation: Docker
 
 With Docker (Linux, or Docker Desktop on macOS and Windows; see
-[macOS and Windows](#macos-and-windows-not-tested-yet) below):
+[macOS and Windows](#macos-and-windows) below):
 ```
 docker pull ghcr.io/gmulas/anharmonicaos:2026.11.1
 docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.1 anh-selftest
@@ -51,31 +51,33 @@ Who owns the files you write in `/work`:
 - **Docker with a root daemon** (the usual Linux installation): add
   `--user $(id -u):$(id -g)` to `docker run`, or the files belong to root.
 
-## macOS and Windows: not tested yet
+## macOS and Windows
 
-The image is tested on Linux only (x86_64 and arm64). It should also run on:
-- **macOS**, with Docker Desktop or an equivalent (Colima, OrbStack,
-  Podman), which runs a Linux virtual machine: Docker picks the arm64 image
+The image has been tested on Linux (x86_64 and arm64) and, with
+`anh-selftest` of release 2026.11.1 (all three numbers as expected), on:
+
+| system | machine | engine | time |
+|---|---|---|---|
+| macOS 26.7.1 | MacBook Pro, Apple M1 Pro (arm64 image) | Docker Desktop 4.99 | 2 min 22 s |
+| Windows 11 Pro 23H2, WSL 3.0.1 | ASUS Zenbook (amd64 image) | Docker Desktop 4.99.0, WSL2 back end, from PowerShell | about 30 s |
+
+- **macOS**: Docker Desktop, or an equivalent (Colima, OrbStack, Podman;
+  not tested), runs a Linux virtual machine; Docker picks the arm64 image
   on Apple silicon and the amd64 one on Intel Macs. The `.sif` files are of
   no use on a Mac: Apptainer and Singularity do not run on macOS itself.
-- **Windows**, inside WSL2: with Docker Desktop (WSL2 back end) or Docker
-  installed in the WSL2 Linux distribution, or with Apptainer there. Windows
-  without WSL2 is not supported.
+- **Windows**: Docker Desktop with the WSL2 back end, from PowerShell or
+  from the terminal of a WSL2 distribution; Docker installed inside the
+  WSL2 distribution, or Apptainer there, should work too (not tested).
+  Windows without WSL2 is not supported. To work on your own files, keep
+  them in the Linux file system of the WSL2 distribution and run from its
+  terminal: files under `C:\` (`/mnt/c`) are much slower to reach from the
+  virtual machine. From PowerShell the current folder is mounted with
+  `-v ${PWD}:/work`.
 
-If you try it, please report the result. It takes a few minutes:
-1. Install Docker Desktop (macOS, or Windows with WSL2), start it, and open
-   a terminal (on Windows, the terminal of the WSL2 distribution, e.g.
-   Ubuntu).
-2. Run
-   ```
-   docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.1 anh-selftest
-   ```
-   The first time it downloads about 1.5 GB. It should end, after about a
-   minute, with `anh-selftest: OK`.
-3. Send the last lines of the output, the version of the system (macOS
-   version and chip, or Windows version and WSL2 distribution), and the
-   output of `docker version`, to the maintainer, or open an issue in this
-   repository.
+Reports from other systems are welcome: send the last lines of
+`anh-selftest`, the version of the system and of the processor, and the
+output of `docker version`, to the maintainer, or open an issue in this
+repository.
 
 Docker Desktop gives its virtual machine only part of the computer's
 memory and cores (Settings → Resources); the self-test needs less than
