@@ -69,8 +69,8 @@ The image has been tested on Linux (x86_64 and arm64) and, with
 
 | system | machine | engine | time |
 |---|---|---|---|
-| macOS 26.7.1 | MacBook Pro, Apple M1 Pro (arm64 image) | Docker Desktop 4.99 | 2 min 22 s |
-| Windows 11 Pro 23H2, WSL 3.0.1 | ASUS Zenbook (amd64 image) | Docker Desktop 4.99.0, WSL2 back end, from PowerShell | about 30 s |
+| macOS 26.7.1 | MacBook Pro, Apple M1 Pro, 32 GB (arm64 image) | Docker Desktop 4.99 | 2 min 22 s |
+| Windows 11 Pro 23H2, WSL 3.0.1 | ASUS Zenbook, Intel Core i9-13900H, 32 GB (amd64 image) | Docker Desktop 4.99.0, WSL2 back end, from PowerShell | about 30 s |
 
 - **macOS**: Docker Desktop, or an equivalent (Colima, OrbStack, Podman;
   not tested), runs a Linux virtual machine; Docker picks the arm64 image
