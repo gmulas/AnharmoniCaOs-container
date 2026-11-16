@@ -42,6 +42,17 @@ cp -r $ANH_EXAMPLES/pyrene t1 && cd t1 && sh run.sh $ANHBIN 4
 ```
 Phase 2b runs with `mpirun -np N` inside the container.
 
+**Threads, processes and memory.** The image sets `OMP_NUM_THREADS=1`; pass
+more threads with `-e OMP_NUM_THREADS=8` (Docker) or
+`--env OMP_NUM_THREADS=8` (Apptainer). Threads times MPI processes should
+not exceed the cores the container sees (`docker run --rm IMAGE nproc`).
+On macOS and Windows every engine runs the container in a Linux virtual
+machine, also from a terminal, and the container sees only its cores and
+memory: set them in Docker Desktop, Settings > Resources (macOS), or in
+`.wslconfig` for WSL2 (Windows). Details, and other engines: section
+"Threads, processes and memory in a container" of the
+[user manual](https://github.com/gmulas/AnharmoniCaOs-manual).
+
 Who owns the files you write in `/work`:
 - **rootless Docker** (and Docker Desktop on macOS and Windows): root in the
   container is you on the host, so the files already belong to you. Do
