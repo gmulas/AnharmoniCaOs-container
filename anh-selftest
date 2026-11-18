@@ -3,10 +3,11 @@
 # (pyrene, absorption from the ground state) in a temporary directory and
 # compares the results with those of the release.
 #   anh-selftest [NPROC]     (default 2 MPI processes for phase 2b)
-# Expected (AnharmoniCaOs 2026.11.1, code work order T29): 1788 lines in
-# resonanceslist, largest polyad 2363 states, total absorption 446.076
-# km/mol. With other BLAS libraries the last digits of the intensities may
-# differ, so the total is compared within 0.01 km/mol.
+# Expected (AnharmoniCaOs 2026.11.1, code work order T29; the same in
+# 2026.11.2): 1788 lines in resonanceslist, largest polyad 2363 states,
+# total absorption 446.076 km/mol. With other BLAS libraries the last
+# digits of the intensities may differ, so the total is compared within
+# 0.01 km/mol.
 set -e
 NP=${1:-2}
 W=$(mktemp -d)
