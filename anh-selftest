@@ -3,9 +3,10 @@
 # (pyrene, absorption from the ground state) in a temporary directory and
 # compares the results with those of the release.
 #   anh-selftest [NPROC]     (default 2 MPI processes for phase 2b)
-# Expected (AnharmoniCaOs 2026.11.1, code work order T29; the same in
-# 2026.11.2): 1788 lines in resonanceslist, largest polyad 2363 states,
-# total absorption 446.076 km/mol. With other BLAS libraries the last
+# Expected (AnharmoniCaOs 2026.11.3, with the defaults closureterms = 1
+# and dipole3balance = 1): 1845 lines in resonanceslist, largest polyad
+# 3094 states, total absorption 481.694 km/mol (2026.11.1 and 2026.11.2:
+# 1788, 2363, 446.076). With other BLAS libraries the last
 # digits of the intensities may differ, so the total is compared within
 # 0.01 km/mol.
 set -e
@@ -28,10 +29,10 @@ for c in (0, 1, 2):
             continue
         t += 16.194 * float(p[0]) * float(p[1])
 print("%.3f" % t)')
-echo "resonanceslist lines: $lines (expected 1788)"
-echo "largest polyad: $largest (expected 2363)"
-echo "total absorption: $total km/mol (expected 446.076)"
-ok=$(python3 -c "print(int($lines == 1788 and $largest == 2363 and abs($total - 446.076) < 0.01))")
+echo "resonanceslist lines: $lines (expected 1845)"
+echo "largest polyad: $largest (expected 3094)"
+echo "total absorption: $total km/mol (expected 481.694)"
+ok=$(python3 -c "print(int($lines == 1845 and $largest == 3094 and abs($total - 481.694) < 0.01))")
 if [ "$ok" = 1 ]; then
   echo "anh-selftest: OK"
   rm -rf "$W"
