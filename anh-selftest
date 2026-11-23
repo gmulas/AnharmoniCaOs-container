@@ -3,10 +3,10 @@
 # (pyrene, absorption from the ground state) in a temporary directory and
 # compares the results with those of the release.
 #   anh-selftest [NPROC]     (default 2 MPI processes for phase 2b)
-# Expected (AnharmoniCaOs 2026.11.3, with the defaults closureterms = 1
-# and dipole3balance = 1): 1845 lines in resonanceslist, largest polyad
-# 3094 states, total absorption 481.694 km/mol (2026.11.1 and 2026.11.2:
-# 1788, 2363, 446.076). With other BLAS libraries the last
+# Expected (AnharmoniCaOs 2026.11.3 and 2026.11.4, with the defaults
+# closureterms = 1 and dipole3balance = 1): 1845 lines in resonanceslist,
+# largest polyad 3094 states, total absorption 481.694 km/mol (2026.11.1
+# and 2026.11.2: 1788, 2363, 446.076). With other BLAS libraries the last
 # digits of the intensities may differ, so the total is compared within
 # 0.01 km/mol.
 set -e
