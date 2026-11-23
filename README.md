@@ -10,7 +10,7 @@ of the [user manual](https://github.com/gmulas/AnharmoniCaOs-manual/releases/lat
 Nothing needs to be compiled.
 
 The image is `ghcr.io/gmulas/anharmonicaos`, for x86_64 (amd64) and arm64
-(for example Apple Silicon Macs), tagged with the release (`2026.11.3`) and
+(for example Apple Silicon Macs), tagged with the release (`2026.11.4`) and
 `latest`.
 
 ## Laptop or workstation: Docker
@@ -18,8 +18,8 @@ The image is `ghcr.io/gmulas/anharmonicaos`, for x86_64 (amd64) and arm64
 With Docker (Linux, or Docker Desktop on macOS and Windows; see
 [macOS and Windows](#macos-and-windows) below):
 ```
-docker pull ghcr.io/gmulas/anharmonicaos:2026.11.3
-docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.3 anh-selftest
+docker pull ghcr.io/gmulas/anharmonicaos:2026.11.4
+docker run --rm ghcr.io/gmulas/anharmonicaos:2026.11.4 anh-selftest
 ```
 `anh-selftest [N]` runs Tutorial 1 of the manual with N MPI processes for
 phase 2b (default 2) and should end with `anh-selftest: OK`; it takes about
@@ -31,7 +31,7 @@ really want more processes). The image is about 1.5 GB.
 
 To work on your own files, mount the current directory as `/work`:
 ```
-docker run --rm -it -v "$PWD":/work ghcr.io/gmulas/anharmonicaos:2026.11.3
+docker run --rm -it -v "$PWD":/work ghcr.io/gmulas/anharmonicaos:2026.11.4
 ```
 Inside, the programs `thermal_anharmonicity_fase1`, `_fase2a` and `_fase2b`
 and the tools (`gaussian2ac.py`, `orca2ac.py`, `anh_sample.py`,
@@ -98,9 +98,9 @@ memory and cores (Settings → Resources); the self-test needs less than
 ## Cluster: Apptainer (Singularity)
 
 ```
-apptainer pull anharmonicaos-2026.11.3.sif docker://ghcr.io/gmulas/anharmonicaos:2026.11.3
-apptainer exec anharmonicaos-2026.11.3.sif anh-selftest
-apptainer exec anharmonicaos-2026.11.3.sif thermal_anharmonicity_fase1
+apptainer pull anharmonicaos-2026.11.4.sif docker://ghcr.io/gmulas/anharmonicaos:2026.11.4
+apptainer exec anharmonicaos-2026.11.4.sif anh-selftest
+apptainer exec anharmonicaos-2026.11.4.sif thermal_anharmonicity_fase1
 ```
 The `.sif` file is about 0.5 GB. Apptainer runs as you and mounts your home
 and the current directory, so the programs read and write your files
@@ -108,13 +108,13 @@ directly, and the files belong to you. In a batch job, run the programs with
 `apptainer exec`; phase 2b runs within one node, with `mpirun` inside the
 container:
 ```
-apptainer exec anharmonicaos-2026.11.3.sif mpirun -np 8 thermal_anharmonicity_fase2b
+apptainer exec anharmonicaos-2026.11.4.sif mpirun -np 8 thermal_anharmonicity_fase2b
 ```
 **Several nodes (try at your own risk).** Apptainer also supports the
 "hybrid" model, in which the host's `mpirun` (or `srun`) starts one
 container per process:
 ```
-mpirun -np 64 apptainer exec anharmonicaos-2026.11.3.sif thermal_anharmonicity_fase2b
+mpirun -np 64 apptainer exec anharmonicaos-2026.11.4.sif thermal_anharmonicity_fase2b
 ```
 It needs an MPI on the host that can start the image's OpenMPI (see
 `apptainer exec ... ompi_info --version`; the image has the OpenMPI of
@@ -136,7 +136,7 @@ processes fall back to OpenMPI's `ob1` transport, which does not use
 InfiniBand. To use it, set the PML to UCX for the processes in the
 container:
 ```
-mpirun -np 64 -x OMPI_MCA_pml=ucx apptainer exec anharmonicaos-2026.11.3.sif thermal_anharmonicity_fase2b
+mpirun -np 64 -x OMPI_MCA_pml=ucx apptainer exec anharmonicaos-2026.11.4.sif thermal_anharmonicity_fase2b
 ```
 On the cluster above this made UCX use the InfiniBand adapter (`rc_verbs`
 on `mlx5_0`, shown with `--mca pml_ucx_verbose 10`), phase 2b of Tutorial
@@ -154,7 +154,7 @@ For many starting states, put the container in the `mpirun` entry of the
 Slurm profile of `anh_jobs.py`, and leave `bindir` empty, so that each job
 starts the programs inside the image:
 ```
-"mpirun": "apptainer exec --cleanenv --env OMP_NUM_THREADS=8 /path/anharmonicaos-2026.11.3.sif mpirun -np 1 --bind-to none",
+"mpirun": "apptainer exec --cleanenv --env OMP_NUM_THREADS=8 /path/anharmonicaos-2026.11.4.sif mpirun -np 1 --bind-to none",
 "bindir": ""
 ```
 (tested on a Slurm cluster with SingularityCE: the histograms are the same
@@ -185,8 +185,8 @@ the one in the image.
 ## Building it yourself
 
 ```
-docker build --build-arg JOBS=$(nproc) -t anharmonicaos:2026.11.3 .
-docker run --rm anharmonicaos:2026.11.3 anh-selftest 4
+docker build --build-arg JOBS=$(nproc) -t anharmonicaos:2026.11.4 .
+docker run --rm anharmonicaos:2026.11.4 anh-selftest 4
 ```
 On a 16-thread laptop the build takes about 12 minutes (PETSc about 4,
 ELPA about 5); `JOBS` is the number of parallel compile jobs (default 4).
