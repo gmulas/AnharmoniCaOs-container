@@ -1,7 +1,7 @@
 # AnharmoniCaOs in a container, built from the public release tarball.
 #
-#   docker build -t anharmonicaos:2026.11.5 .
-#   docker run --rm anharmonicaos:2026.11.5 anh-selftest
+#   docker build -t anharmonicaos:2026.11.6 .
+#   docker run --rm anharmonicaos:2026.11.6 anh-selftest
 #
 # Everything is built from public sources: Debian packages (MPI, 64-bit
 # BLAS/LAPACK/ScaLAPACK, GSL, PARI, Python), PETSc, SLEPc and ELPA from
@@ -15,8 +15,8 @@
 ARG DEBIAN=trixie
 
 FROM debian:${DEBIAN}-slim AS build
-ARG ANH_VERSION=2026.11.5
-ARG ANH_SHA256=069450ae471f770cee3bb69a144f6021ec4f48ef0842091ff213776d271c8607
+ARG ANH_VERSION=2026.11.6
+ARG ANH_SHA256=30085fdb22857d36ea6636e9453d0691aded078a714b2035a08dca4619988889
 # Where to get the release tarball; its SHA256 is checked whatever the
 # source. For a local test before the upload, serve the tarball with
 # "python3 -m http.server" and build with --network=host
@@ -118,7 +118,7 @@ RUN curl -fsSL -o anh.tar.gz "${ANH_URL}" \
  && cd .. && rm -rf AnharmoniCaOs-${ANH_VERSION}
 
 FROM debian:${DEBIAN}-slim
-ARG ANH_VERSION=2026.11.5
+ARG ANH_VERSION=2026.11.6
 LABEL org.opencontainers.image.title="AnharmoniCaOs" \
       org.opencontainers.image.version="${ANH_VERSION}" \
       org.opencontainers.image.description="Anharmonic IR spectra of large molecules (PAHs), including hot bands" \
